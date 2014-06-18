@@ -1,10 +1,13 @@
 //What is the greatest product of four adjacent numbers in the same direction (up, down, left, right, or diagonally) in the 20×20 grid?
 
+//Max prod at [12 , 6] in direction [/] with value [70600674]
+
 #include <stdio.h>
 #include <stdint.h>
 
 #define GRIDH 20
 #define GRIDW 20
+#define MATCHLEN 4
 
 uint32_t blob[GRIDH][GRIDW] = { { 8,  2, 22, 97, 38, 15,  0, 40,  0, 75,  4,  5,  7, 78, 52, 12, 50, 77, 91,  8},
 								{49, 49, 99, 40, 17, 81, 18, 57, 60, 87, 17, 40, 98, 43, 69, 48,  4, 56, 62,  0},
@@ -28,13 +31,46 @@ uint32_t blob[GRIDH][GRIDW] = { { 8,  2, 22, 97, 38, 15,  0, 40,  0, 75,  4,  5,
 								{ 1, 70, 54, 71, 83, 51, 54, 69, 16, 92, 33, 48, 61, 43, 52,  1, 89, 19, 67, 48} };
 
 int main(void){
-	int currow, curcol;
+	int currow, curcol, loop, maxprod = 0, maxdir, maxrow, maxcol, curprod;
 
 	for(currow = 0; currow < GRIDH; currow++){
 		for(curcol = 0; curcol < GRIDW; curcol++){
-
+			for(loop = 0, curprod = 1; curcol <= GRIDW - MATCHLEN && loop < MATCHLEN; loop++) // - Dir
+				curprod *= blob[currow][curcol + loop];
+			if(curprod > maxprod){
+				maxprod = curprod;
+				maxrow = currow;
+				maxcol = curcol;
+				maxdir = '-';
+			}
+			for(loop = 0, curprod = 1; curcol <= GRIDW - MATCHLEN && currow <= GRIDH - MATCHLEN && loop < MATCHLEN; loop++) // \ Dir
+				curprod *= blob[currow + loop][curcol + loop];
+			if(curprod > maxprod){
+				maxprod = curprod;
+				maxrow = currow;
+				maxcol = curcol;
+				maxdir = '\\';
+			}
+			for(loop = 0, curprod = 1; currow <= GRIDH - MATCHLEN && loop < MATCHLEN; loop++) // | Dir
+				curprod *= blob[currow + loop][curcol];
+			if(curprod > maxprod){
+				maxprod = curprod;
+				maxrow = currow;
+				maxcol = curcol;
+				maxdir = '|';
+			}
+			for(loop = 0, curprod = 1; curcol >= MATCHLEN - 1 && currow <= GRIDH - MATCHLEN && loop < MATCHLEN; loop++) // / Dir
+				curprod *= blob[currow + loop][curcol - loop];
+			if(curprod > maxprod){
+				maxprod = curprod;
+				maxrow = currow;
+				maxcol = curcol;
+				maxdir = '/';
+			}
 		}
 	}
+
+	printf("Max prod at [%d , %d] in direction [%c] with value [%d]\n", maxrow, maxcol, maxdir, maxprod);
 
 	return 0;
 }
