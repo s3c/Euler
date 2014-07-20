@@ -1,9 +1,3 @@
-// Don't check even numbers
-// Only divide by primes
-// Up to <= Sqrt(numtocheck)
-// Multiples of primes won't be prime
-// -- How to use? Keep track of highest prime multiples up to and past current known prime?
-
 //-> Multiple of previous prime? Then not prime.
 //-> Not multiple of previous prime? Always prime? Yup
 
@@ -20,12 +14,14 @@
 #include <stdint.h>
 #include <math.h>
 
+#define INCVAL	10000
+
 uint32_t *primevals, *primefcts, numprimes;
 
 void initprime(void){
-	numprimes = 2;
+    numprimes = 2;
 
-	primevals = malloc(sizeof(uint32_t) * 2);
+    primevals = malloc(sizeof(uint32_t) * 2);
     primefcts = malloc(sizeof(uint32_t) * 2);
 
     primevals[0] = primefcts[0] = 2;
@@ -37,26 +33,15 @@ uint8_t testprime(uint32_t potprime){
 	static uint32_t toloc = 0;
 
 	testto = sqrt(potprime);
-	while(primevals[toloc] < testto)
+	while(primevals[toloc+1] <= testto)
 		toloc++;
-	if(primevals[toloc] > testto)
-		toloc--;
-
-	//printf("Test to %d located at %d\n", primevals[toloc], toloc);
 
 	for(loop = 0; loop <= toloc; loop++){
-		while(primefcts[loop] < potprime){
-			//printf("Updating multiples of %d from %d to ", primevals[loop], primefcts[loop]);
+		while(primefcts[loop] < potprime)
 			primefcts[loop] += primevals[loop];
-			//printf("%d\n", primefcts[loop]);
-		}
-		if(primefcts[loop] == potprime){
-			//printf("-Multiple of %d (%d)\n\n", primevals[loop], primefcts[loop]);
+		if(primefcts[loop] == potprime)
 			return 0;
-		}
 	}
-
-	//printf("+Prime found: %d\n\n", potprime);
 
 	return 1;
 }
@@ -67,17 +52,30 @@ void genprime(uint32_t primecount){
 	primevals = realloc(primevals, sizeof(uint32_t) * (numprimes + primecount));
 	primefcts = realloc(primefcts, sizeof(uint32_t) * (numprimes + primecount));
 
-	for(primeloop = 0, tocheck = primevals[numprimes-1] + 2; primeloop < primecount;){
-
-		//printf("[Checking prime: %d]\n", tocheck);
-
+	for(primeloop = 0, tocheck = primevals[numprimes-1] + 2; primeloop < primecount; tocheck += 2){
 		if(testprime(tocheck)){
 				primevals[numprimes] = primefcts[numprimes] = tocheck;
-				//printf("Numprimes: %d, primevals[numprimes]: %d, primefcts[numprimes]: %d, lastcheck: %d\n", numprimes, primevals[numprimes], primefcts[numprimes], tocheck);
 				numprimes++;
 				primeloop++;
-
 		}
-		tocheck += 2;
 	}
+}
+
+uint32_t numprimesto(uint32_t toval){
+	uint32_t loop;
+
+	if(primevals[numprimes-1] < toval)
+		return 0;
+
+	for(loop = numprimes-1; primevals[loop] > toval; loop--);
+	return loop;
+}
+
+uint32_t genprimeto(uint32_t toval){
+	uint32_t loop;
+
+	while(primevals[numprimes-1] < toval)
+		genprime(INCVAL);
+
+	return numprimesto(toval);
 }
