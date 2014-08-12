@@ -2,7 +2,6 @@
 //How many such routes are there through a 20×20 grid?
 
 //Grid paths: 137846528820
-//Should have started at GRIDSIZE-1, would remove the two if's in the inner loop
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,18 +12,17 @@ int main(void){
 	long int grid[GRIDSIZE+1][GRIDSIZE+1], currow, curcol;
 	
 	memset(grid, 0, sizeof(grid));
-	grid[GRIDSIZE][GRIDSIZE] = 1;
-	
-	for(currow = GRIDSIZE; currow >= 0; currow--){
-			for(curcol = GRIDSIZE; curcol >= 0; curcol--){
-				if(curcol < GRIDSIZE)
-					grid[currow][curcol] += grid[currow][curcol+1];
-				if(currow < GRIDSIZE)
-					grid[currow][curcol] += grid[currow+1][curcol];
-			}
+	for(currow = 0; currow <= GRIDSIZE; currow++){
+		grid[currow][0] = 1;
+		grid[0][currow] = 1;
 	}
 	
-	printf("Grid paths: %ld\n", grid[0][0]);
+	for(currow = 1; currow <= GRIDSIZE; currow++){
+		for(curcol = 1; curcol <= GRIDSIZE; curcol++)
+			grid[currow][curcol] = grid[currow-1][curcol] + grid[currow][curcol-1];
+	}
+	
+	printf("Grid paths: %ld\n", grid[GRIDSIZE][GRIDSIZE]);
 
 	return 1;
 }
